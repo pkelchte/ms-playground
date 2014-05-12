@@ -1,0 +1,3 @@
+[submodule "ms-playground.wiki"]
+	path = ms-playground.wiki
+	url = https://github.com/pkelchte/ms-playground.wiki.git
