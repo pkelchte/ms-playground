@@ -1,0 +1,102 @@
+<!doctype html>
+<html>
+	<head>
+		<title>MS Playground</title>
+		<link rel="stylesheet" href="/static/style.css">
+		<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+		<script src="/static/jquery-linedtextarea.js"></script>
+		<script src="/static/playground.js"></script>
+		<script>
+		$(document).ready(function() {
+			playground({
+				'codeEl':     '#code',
+				'outputEl':   '#output',
+				'plotEl':     '#plot',
+				'runEl':      '#run',
+				'downloadEl': '#download',
+				'fmtEl':      '#fmt',
+				'shareEl':    '#share',
+				'shareURLEl': '#shareURL',
+				'enableHistory': true,
+				'aboutEl': '#about'
+			});
+			$('#code').linedtextarea();
+			// Avoid line wrapping.
+			$('#code').attr('wrap', 'off');
+
+		});
+		</script>
+		
+		<script type="text/javascript" src="//www.google.com/jsapi"></script>
+		<script type="text/javascript">
+		  google.load('visualization', '1', {packages: ['corechart']});
+		</script>
+	</head>
+	<body itemscope itemtype="http://schema.org/CreativeWork">
+		<div id="banner">
+			<div id="head" itemprop="name">MS Playground</div>
+			<div id="controls">
+				<input type="button" value="Run" id="run">
+				<input type="button" value="Download" id="downloadButton">
+				<input type="button" value="Format" id="fmt">
+				<input type="button" value="Share" id="share">
+				<div id="checkBox">
+					<label title="Graphical output instead of text, see About.">
+						<input type="checkbox" id="plot">
+						Plot
+					</label>
+				</div>
+				<input type="text" id="shareURL">
+				<div id="download"></div>
+			</div>
+			<div id="aboutControls">
+				<input type="button" value="About" id="aboutButton">
+			</div>
+		</div>
+		<div id="wrap">
+			<textarea itemprop="description" id="code" name="code" autocorrect="off" autocomplete="off" autocapitalize="off" spellcheck="false">{{printf "%s" .Snippet.Body |html}}</textarea>
+		</div>
+		<div id="output"></div>
+		<div id="about">
+<p><b>About the Playground</b></p>
+
+<p>
+MS Playground is a web service like the <a href="http://play.golang.org/">Go Playground</a>.
+Similarly, it receives a Go program, compiles, links, and
+runs the program inside a sandbox, then returns the output.
+</p>
+<p>
+The source code is published on <a href="https://bitbucket.org/proteinspector/msplayground/">Bitbucket</a>,
+and examples can be found on the <a href="https://github.com/pkelchte/ms-playground/wiki">MS Playground wiki</a>.
+</p>
+<p>
+MS Playground targets mass spectrometry programs.
+It differs from the Go Playground in three ways.
+</p>
+
+<ul>
+<li>
+It can also serve executables of the compiled programs. The download
+button compiles six binaries, for Windows, Mac OS X, and Linux, on 32-bit
+and 64-bit architectures. It are command-line tools that accept flags.
+</li>
+
+<li>
+There are two test files available on the server. They can be loaded with
+the <a href="https://godoc.org/bitbucket.org/proteinspector/ms/unthermo">unthermo</a> library.
+The files are called "small.RAW" and "itraq.RAW". Any attempt to load another file will fail.
+</li>
+
+<li>
+The playground can display a 2D scatter plot instead of raw numbers.
+The plot script expects two columns of numbers, separated by space.
+</li>
+</ul>
+<p>
+Like on the Go Playground, there are <a href="http://blog.golang.org/playground">limitations</a> to the programs
+that can be run. These limitations don't apply to the served executables.
+</p>
+
+		</div>
+	</body>
+</html>

@@ -1,0 +1,12 @@
+application: ms-playground
+version: 2
+runtime: go
+api_version: go1
+
+handlers:
+- url: /static
+  static_dir: static
+- url: /(|compile|fmt|share|download)
+  script: _go_app
+- url: /p/.+
+  script: _go_app
