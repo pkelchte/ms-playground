@@ -9,7 +9,7 @@ The [wiki pages for MS-related algorithms](https://github.com/pkelchte/ms-playgr
 
 The go-playground folder contains the front-end of the playground, which is deployed to appspot.
 
-compile.go in the root folder is supposed to run on another server.
+backend.go in the root folder is supposed to run on another server.
 
 That server should have a working golang 1.3 compiler toolchain (for all platforms, including nacl),
 as well as a version of the NaCl SDK, to run programs in a sandboxed environment.
