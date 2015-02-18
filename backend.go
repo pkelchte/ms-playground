@@ -8,18 +8,18 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-	"path/filepath"
 	"net/http"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 	"time"
 )
 
 const internalUrl = "http://localhost:4000"
-const url = "http://iomics.ugent.be/msplayground"//internalUrl 
+const url = "http://iomics.ugent.be/msplayground" //internalUrl
 const name = "/prog.go"
-const mypath = "C:\\Users\\compomics\\msplayground"//"/home/pieter/compomics/msplayground/"
+const mypath = "C:\\Users\\compomics\\msplayground" //"/home/pieter/compomics/msplayground/"
 const sel_ldr = mypath + "/nacl_sdk/pepper_34/tools/sel_ldr_x86_64"
 
 type limitedCmd struct {
@@ -83,6 +83,22 @@ func (cmd *limitedCmd) killAfter(t time.Duration) (err error) {
 	return err
 }
 
+func isServed(s string) bool {
+	response, err := http.Get(s)
+	if err != nil {
+		log.Println(err)
+		return false
+	}
+	defer response.Body.Close()
+
+	text, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		log.Println(err)
+		return false
+	}
+	return !strings.Contains(string(text), "404 page not found")
+}
+
 //compile the source for multiple platforms and architectures
 //if successful, serve the working folder on http
 //otherwise return with an empty string map so nothing gets back to the client
@@ -96,25 +112,25 @@ func (p *prog) compileandserve() {
 	ds["64-bit Windows"], errs[3] = p.compile("windows", "amd64")
 	ds["32-bit MacOS X"], errs[4] = p.compile("darwin", "386")
 	ds["64-bit MacOS X"], errs[5] = p.compile("darwin", "amd64")
-	
-	
+
 	for _, err := range errs {
 		if err != nil {
 			p.Downloads = make(map[string]string, 1)
-			p.Downloads["error: " + err.Error()] = ""
+			p.Downloads["error: "+err.Error()] = ""
 			return
 		}
 	}
-	
+
 	fileBasePath := "/" + filepath.Base(p.Directory) + "/"
 	for k := range ds {
 		ds[k] = url + fileBasePath + filepath.Base(ds[k])
 	}
 
 	p.Downloads = ds
-
-	log.Println("serving", p.Directory)
-	http.Handle(fileBasePath, http.StripPrefix(fileBasePath, http.FileServer(http.Dir(p.Directory))))
+	if !isServed(url+fileBasePath) {
+		log.Println("serving", p.Directory)
+		http.Handle(fileBasePath, http.StripPrefix(fileBasePath, http.FileServer(http.Dir(p.Directory))))
+	}
 }
 
 //compile cross-platform, in the same directory as the source,
@@ -125,7 +141,7 @@ func (p *prog) compile(goos string, goarch string) (string, error) {
 
 	os.Setenv("GOARCH", goarch)
 	os.Setenv("GOOS", goos)
-	
+
 	defer os.Setenv("GOARCH", oldgoarch)
 	defer os.Setenv("GOOS", oldgoos)
 
@@ -136,11 +152,11 @@ func (p *prog) compile(goos string, goarch string) (string, error) {
 	}
 
 	cmd := limitedCmd{exec.Command("go", "build", "-o", ofile, ifile)}
-	
+
 	//only capture stderr, a successful build has no output
 	var b bytes.Buffer
 	cmd.Stderr = &b
-	
+
 	err := cmd.Start()
 	if err != nil {
 		log.Println(err)
@@ -157,13 +173,13 @@ func (p *prog) compile(goos string, goarch string) (string, error) {
 //compile and run prog.go with ./sel_ldr_x86_64
 func (p *prog) run() {
 	oldgopath := os.Getenv("GOPATH")
-	
+
 	os.Setenv("GOPATH", mypath)
 
 	defer os.Setenv("GOPATH", oldgopath)
 
 	bin, err := p.compile("nacl", "amd64p32")
-		if err != nil {
+	if err != nil {
 		p.RunResponse = RunResponse{
 			Errors: err.Error(),
 			Events: []Event{Event{Message: "", Delay: 0}},
@@ -178,7 +194,7 @@ func (p *prog) run() {
 	//only capture stdout, as the Go output streams are merged in NaCl
 	var out bytes.Buffer
 	cmd.Stdout = &out
-	
+
 	err = cmd.Start()
 	if err != nil {
 		log.Println(err)
@@ -186,8 +202,8 @@ func (p *prog) run() {
 	cmd.killAfter(5 * time.Second)
 
 	p.RunResponse = RunResponse{
-			Errors: "",
-			Events: []Event{Event{Message: out.String(), Delay: 0}},
+		Errors: "",
+		Events: []Event{Event{Message: out.String(), Delay: 0}},
 	}
 }
 
